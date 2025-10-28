@@ -1,0 +1,243 @@
+﻿@model IEnumerable<SkyHigh.Models.Flight>
+
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var tripType = ViewBag.TripType as string ?? "OneWay";
+
+    DateTime? returnDate = ViewBag.ReturnDate as DateTime?;
+
+}
+
+
+<style>
+
+    /* === Background: Realistic moving cloud sky === */
+
+    body {
+        position: relative;
+        overflow-x: hidden;
+        background: #ffffff;
+    }
+
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: url('/images/Register-bg-image15.jpeg') no-repeat center center fixed;
+        background-size: cover;
+        position: relative;
+    }
+
+    */
+    /* === Semi-transparent overlay for readability === */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(3px);
+        z-index: -1;
+    }
+
+    @@keyframes slowDrift {
+
+        0% {
+            transform: scale(1.05) translateX(0px) translateY(0px);
+        }
+
+        50% {
+            transform: scale(1.08) translateX(-25px) translateY(10px);
+        }
+
+        100% {
+            transform: scale(1.05) translateX(15px) translateY(-10px);
+        }
+    }
+
+    /* === Existing layout === */
+
+    .page-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 40px 15px;
+        background: transparent !important; /* Let the clouds show */
+    }
+
+    .centerbox {
+        max-width: 700px;
+        width: 100%;
+        padding: 24px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        border-radius: 12px;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #0078d7;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .nice-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+        .nice-table th,
+        .nice-table td {
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        .nice-table thead {
+            background-color: #f0f0f0;
+        }
+
+        .nice-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+    .btn-book {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .btn-book:hover {
+            background-color: #0056b3;
+        }
+
+    .alert-info {
+        background-color: #e9f5ff;
+        color: #004085;
+        border: 1px solid #b6e0fe;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    /* Smooth fade animation for box load */
+
+    .centerbox {
+        animation: fadeIn 1s ease-out;
+    }
+
+    @@keyframes fadeIn {
+
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="page-center">
+    <div class="centerbox">
+        <h2>Available Flights</h2>
+
+        @if (Model == null || !Model.Any())
+
+        {
+            <div class="alert-info">
+
+                No flights available for the selected route and date.
+            </div>
+
+        }
+
+        else
+
+        {
+            <table class="nice-table">
+                <thead>
+                    <tr>
+                        <th>Flight No</th>
+                        <th>Source</th>
+                        <th>Destination</th>
+                        <th>Departure</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach (var flight in Model)
+
+                    {
+                        <tr>
+                            <td>@flight.FlightNo</td>
+                            <td>@flight.Source</td>
+                            <td>@flight.Destination</td>
+                            <td>@flight.DepartureTime.ToString("dd MMM yyyy, HH:mm")</td>
+                            <td>
+
+                                @if (tripType == "RoundTrip")
+
+                                {
+                                    <!-- For RoundTrip, post to SelectFlight -->
+                                    <form method="post" asp-action="SelectFlight" asp-controller="Flight" style="margin:0;">
+                                        <input type="hidden" name="DepartureFlightId" value="@flight.FlightId" />
+                                        <input type="hidden" name="TripType" value="@tripType" />
+                                        <input type="hidden" name="ReturnDate" value="@(returnDate?.ToString("yyyy-MM-dd") ?? "")" />
+                                        <button type="submit" class="btn-book">Select</button>
+                                    </form>
+
+                                }
+
+                                else
+
+                                {
+                                    <!-- For OneWay, directly book -->
+                                    <a asp-controller="Booking"
+                                       asp-action="Book"
+                                       asp-route-flightId="@flight.FlightId"
+                                       class="btn-book">Book Now</a>
+
+                                }
+                            </td>
+                        </tr>
+
+                    }
+                </tbody>
+            </table>
+
+        }
+        <!-- Display trip summary below -->
+        <div class="mt-4 text-center">
+            <p class="text-muted small mb-0">
+
+                Trip Type: <strong>@tripType</strong>
+
+                @if (returnDate != null)
+
+                {
+                    <span> | Return Date: <strong>@returnDate.Value.ToString("dd MMM yyyy")</strong></span>
+
+                }
+            </p>
+        </div>
+    </div>
+</div>
+

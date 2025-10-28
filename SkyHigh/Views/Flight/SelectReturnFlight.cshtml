@@ -1,0 +1,227 @@
+﻿@model IEnumerable<SkyHigh.Models.Flight>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var outbound = ViewBag.OutboundFlight as SkyHigh.Models.Flight;
+    DateTime? returnDate = ViewBag.ReturnDate as DateTime?;
+}
+
+
+<style>
+    /* === Real Cloud Background (same as Search page) === */
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: url('/images/Register-bg-image15.jpeg') no-repeat center 60%;
+        background-size: cover;
+        background-attachment: scroll; /* scrolls naturally */
+        overflow-x: hidden;
+        position: relative;
+    }
+
+        /* Optional: add soft overlay for readability */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.2); /* super light tint */
+            backdrop-filter: blur(1px);
+            z-index: -1;
+        }
+
+    /* Remove the dull background from the main section */
+    .page-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: transparent !important; /* removed grey box */
+        padding: 40px 20px;
+    }
+
+    /* Main content card */
+    .centerbox {
+        max-width: 750px;
+        width: 100%;
+        padding: 24px;
+        background: rgba(255, 255, 255, 0.9); /* soft glass effect */
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #0078d7;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    /* === Back button styling (top-right corner) === */
+    /* .back-btn {
+                position: absolute;
+                top: 12px;
+                right: 18px;
+                font-size: 0.95rem;
+                border-radius: 6px;
+                padding: 4px 10px;
+                background-color: #f8f9fa;
+                border: 1px solid #ced4da;
+                color: #333;
+                transition: all 0.3s ease;
+            }
+
+                .back-btn:hover {
+                    background-color: #0078d7;
+                    color: white;
+                    border-color: #0078d7;
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                } */
+    /* === Modern circular icon back button === */
+    .back-btn-icon {
+        position: absolute;
+        top: 15px;
+        right: 18px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0078d7;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+        .back-btn-icon:hover {
+            background-color: #0078d7;
+            color: #fff;
+            border-color: #0078d7;
+            transform: translateY(-1px) scale(1.05);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+
+    /* Flight table styling */
+    .nice-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+        .nice-table th,
+        .nice-table td {
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .nice-table thead {
+            background-color: #f0f0f0;
+        }
+
+        .nice-table tbody tr:nth-child(even) {
+            background-color: rgba(249, 249, 249, 0.8);
+        }
+
+    .btn-book {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .btn-book:hover {
+            background-color: #0056b3;
+        }
+
+    .alert-info {
+        background-color: #e9f5ff;
+        color: #004085;
+        border: 1px solid #b6e0fe;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    /* Smooth fade-in animation */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+
+<div class="page-center">
+    <div class="centerbox position-relative">
+
+        <h2>Select Return Flight</h2>
+
+        <div class="mb-3 text-center">
+            <p class="text-muted small">
+                Outbound: <strong>@outbound.Source → @outbound.Destination</strong><br />
+                Return Date: <strong>@returnDate?.ToString("dd MMM yyyy")</strong>
+            </p>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert-info">
+                No return flights found for the selected date.
+            </div>
+        }
+        else
+        {
+            <table class="nice-table">
+                <thead>
+                    <tr>
+                        <th>Flight No</th>
+                        <th>Source</th>
+                        <th>Destination</th>
+                        <th>Departure</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var flight in Model)
+                    {
+                        <tr>
+                            <td>@flight.FlightNo</td>
+                            <td>@flight.Source</td>
+                            <td>@flight.Destination</td>
+                            <td>@flight.DepartureTime.ToString("dd MMM yyyy, HH:mm")</td>
+                            <td>
+                                <form method="get" asp-controller="Booking" asp-action="Book">
+                                    <input type="hidden" name="flightId" value="@outbound.FlightId" />
+                                    <input type="hidden" name="ReturnFlightId" value="@flight.FlightId" />
+                                    <input type="hidden" name="TripType" value="RoundTrip" />
+                                    <button type="submit" class="btn-book">Book Both Flights</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

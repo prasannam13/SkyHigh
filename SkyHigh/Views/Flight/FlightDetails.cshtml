@@ -1,0 +1,33 @@
+﻿@model SkyHigh.Models.Flight
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var isLoggedIn = Context.Session.GetInt32("UserId") != null;
+}
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+    <div class="centerbox" style="max-width:500px; width:100%;">
+        <h2 style="color:#007bff;">Flight Details</h2>
+        <p><b>Flight No:</b> @Model.FlightNo</p>
+        <p><b>From:</b> @Model.Source</p>
+        <p><b>To:</b> @Model.Destination</p>
+        <p><b>Departure:</b> @Model.DepartureTime.ToString("dd-MM-yyyy HH:mm")</p>
+        <p><b>Arrival:</b> @Model.ArrivalTime.ToString("dd-MM-yyyy HH:mm")</p>
+        <p><b>Duration:</b> @Model.Duration</p>
+        <p><b>Economy Fare:</b> ₹@Model.EconomyFare</p>
+        <p><b>Business Fare:</b> ₹@Model.BusinessFare</p>
+        <div style="margin-top:18px;">
+            @if (isLoggedIn)
+            {
+                <a class="btn btn-success" style="font-weight:bold;" href="@Url.Action("Book", "Booking", new { flightId = Model.FlightId })">Book Seats</a>
+            }
+            else
+            {
+                <a class="btn btn-success" style="font-weight:bold;" href="@Url.Action("Login", "Account")">Book Seats</a>
+            }
+        </div>
+        <div style="margin-top:18px;">
+            <button onclick="window.history.back()" class="btn btn-secondary">&larr; Back</button>
+        </div>
+    </div>
+</<div>
+

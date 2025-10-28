@@ -1,0 +1,419 @@
+﻿@{
+    var booking = ViewBag.Booking as SkyHigh.Models.Booking;
+    var flight = ViewBag.Flight as SkyHigh.Models.Flight;
+    var payment = ViewBag.Payment as SkyHigh.Models.Payment;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="booking-details-container">
+    <h2>Booking Details</h2>
+
+    @if (booking != null && booking.Passengers != null && booking.Passengers.Count > 0)
+    {
+        <table class="booking-table">
+            <thead>
+                <tr>
+                    <th>Passenger Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Seat No</th>
+                    <th>PNR</th>
+                    <th>Flight No</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in booking.Passengers)
+                {
+                    <tr>
+                        <td>@p.Name</td>
+                        <td>@p.Age</td>
+                        <td>@p.Gender</td>
+                        <td>@p.SeatNo</td>
+                        <td>@booking.PNR</td>
+                        <td>@booking.Flight?.FlightNo</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div style="color: #d32f2f; font-weight: bold;">No passenger data found for this booking.</div>
+    }
+
+    <hr style="margin: 18px 0; border: none; border-top: 1px solid #eee;" />
+
+    <div class="booking-info">
+        <div>
+            Booking Date: <b>@(booking?.BookingDate != null ? booking.BookingDate.ToString("dd-MM-yyyy HH:mm:ss") : "-")</b>
+        </div>
+        <div>
+            Flight Route:
+            <b>
+                @(flight != null && !string.IsNullOrEmpty(flight.Source) ? flight.Source : "-")
+                &rarr;
+                @(flight != null && !string.IsNullOrEmpty(flight.Destination) ? flight.Destination : "-")
+            </b>
+        </div>
+        <div>
+            Flight Time:
+            <b>
+                @(flight != null ? flight.DepartureTime.ToString("dd-MM-yyyy HH:mm:ss") : "-")
+                -
+                @(flight != null ? flight.ArrivalTime.ToString("dd-MM-yyyy HH:mm:ss") : "-")
+            </b>
+        </div>
+        <div>
+            Seats: @(booking?.SeatsBooked ?? "-")
+        </div>
+        <div>
+            Status: <b>@(booking?.Status ?? "-")</b>
+        </div>
+    </div>
+
+    <div class="payment-title">Payment:</div>
+    <div class="booking-info">
+        <div>Base Amount: <b>@(payment != null ? payment.Amount.ToString() : "-")</b></div>
+        <p><strong>GST(@payment.GstRate%):</strong>₹@payment.GST.ToString("F2")</p>
+
+        <p><strong>Total Paid:</strong>₹@((payment.Amount + payment.GST).ToString("F2"))</p>
+        <div>Payment Date: <b>@(payment != null ? payment.PaymentDate.ToString("dd-MM-yyyy HH:mm:ss") : "-")</b></div>
+        <div>Status: <b>@(payment != null ? payment.Status : "-")</b></div>
+        <div>Method: <b>@(payment != null ? payment.Method : "-")</b></div>
+    </div>
+
+    @if (booking?.Status == "Confirmed")
+    {
+        <div class="booking-actions">
+            <a class="btn-download" target="_blank"
+               href="@Url.Action("DownloadTicket", "Booking", new { bookingId = booking.BookingId })">
+                Download Ticket (PDF)
+            </a>
+            <button type="button"
+                    id="cancelTicketBtn"
+                    class="btn-cancel">
+                Cancel Ticket
+            </button>
+        </div>
+    }
+</div>
+
+<!-- Cancel popup and scripts for confirmed status -->
+@if (booking?.Status == "Confirmed")
+{
+    <div id="cancelPopup" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:30px 40px; border-radius:10px; min-width:320px;">
+            <div style="margin-bottom:20px; font-size:18px;">
+                Are you sure you want to cancel this ticket?
+            </div>
+            <div style="display:flex; gap:18px; justify-content:center;">
+                <button id="cancelConfirmBtn" style="background-color:#d32f2f; color:white; font-weight:bold; border-radius:6px; padding:8px 18px; border:none;">Yes, Cancel</button>
+                <button id="cancelCloseBtn" style="background-color:#aaa; color:#fff; border-radius:6px; padding:8px 18px; border:none;">No</button>
+            </div>
+        </div>
+    </div>
+    <div id="finalPopup" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:30px 40px; border-radius:10px; min-width:320px;">
+            <div style="margin-bottom:20px; font-size:18px;">
+                Your ticket has been cancelled.<br />A PDF of the cancelled ticket will be downloaded.
+            </div>
+            <div style="display:flex; gap:18px; justify-content:center;">
+                <button id="finalOkBtn" style="background-color:#22d4e6; color:white; font-weight:bold; border-radius:6px; padding:8px 18px; border:none;">OK</button>
+            </div>
+        </div>
+    </div>
+    <div id="cancelErrorMsg" style="color:red;"></div>
+    @section Scripts {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const cancelBtn = document.getElementById('cancelTicketBtn');
+                const cancelPopup = document.getElementById('cancelPopup');
+                const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+                const cancelCloseBtn = document.getElementById('cancelCloseBtn');
+                const finalPopup = document.getElementById('finalPopup');
+                const finalOkBtn = document.getElementById('finalOkBtn');
+                const cancelErrorMsg = document.getElementById('cancelErrorMsg');
+                let cancelledPdfBase64 = '';
+                let cancelledPdfFilename = '';
+
+                if(cancelBtn) {
+                    cancelBtn.onclick = function() {
+                        cancelPopup.style.display = 'flex';
+                    }
+                }
+                if(cancelCloseBtn) {
+                    cancelCloseBtn.onclick = function() {
+                        cancelPopup.style.display = 'none';
+                    }
+                }
+                if(cancelConfirmBtn) {
+                    cancelConfirmBtn.onclick = function() {
+                        fetch('@Url.Action("AjaxCancelAndDownload", "Booking")', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ bookingId: @booking.BookingId })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            cancelPopup.style.display = 'none';
+                            if(data.success) {
+                                cancelledPdfBase64 = data.pdfBase64;
+                                cancelledPdfFilename = data.filename;
+                                finalPopup.style.display = 'flex';
+                            } else {
+                                cancelErrorMsg.textContent = data.message || 'Error during cancellation.';
+                            }
+                        })
+                        .catch(() => {
+                            cancelPopup.style.display = 'none';
+                            cancelErrorMsg.textContent = 'Error during cancellation.';
+                        });
+                    }
+                }
+                if(finalOkBtn) {
+                    finalOkBtn.onclick = function() {
+                        finalPopup.style.display = 'none';
+                        if(cancelledPdfBase64 && cancelledPdfFilename) {
+                            const link = document.createElement('a');
+                            link.href = 'data:application/pdf;base64,' + cancelledPdfBase64;
+                            link.download = cancelledPdfFilename;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.location.reload();
+                        }
+                    }
+                }
+            });
+        </script>
+    }
+}
+
+
+
+@* <style>
+    .booking-details-container {
+        max-width: 700px;
+        margin: 40px auto 0 auto;
+        background: #FAF7EF;
+        border-radius: 18px;
+        box-shadow: 0 2px 14px #EABFCF;
+        padding: 45px 38px 38px 38px;
+        text-align: center;
+    }
+
+        .booking-details-container h2 {
+            font-size: 2.3rem;
+            color: #AA5D5D;
+            font-weight: bold;
+            margin-bottom: 28px;
+        }
+
+    .booking-table th {
+        background: #AA5D5D;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.06rem;
+        padding: 10px 8px;
+        border: none;
+    }
+
+    .booking-table td {
+        background: #fff;
+        color: #222;
+        font-size: 1.05rem;
+        padding: 10px 8px;
+        border-bottom: 1px solid #EABFCF;
+    }
+
+    .booking-info {
+        margin-bottom: 10px;
+        font-size: 1.09rem;
+        color: #553C3C;
+        text-align: left;
+    }
+
+    .payment-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin: 22px 0 10px 0;
+        color: #AA5D5D;
+    }
+
+    .booking-actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 18px;
+        justify-content: center;
+    }
+
+    .btn-download {
+        background-color: #EABFCF;
+        color: #553C3C;
+        font-weight: bold;
+        border-radius: 6px;
+        padding: 12px 32px;
+        border: none;
+        font-size: 1.09rem;
+        text-decoration: none;
+        transition: background .2s;
+    }
+
+        .btn-download:hover {
+            background-color: #AA5D5D;
+            color: #fff;
+        }
+
+    .btn-cancel {
+        background-color: #D47272;
+        color: #fff;
+        font-weight: bold;
+        border-radius: 6px;
+        padding: 12px 32px;
+        border: none;
+        font-size: 1.09rem;
+        transition: background .2s;
+        cursor: pointer;
+    }
+
+        .btn-cancel:hover {
+            background-color: #AA5D5D;
+        }
+</style>
+
+<div style="margin-top:28px; text-align:center;">
+    <button onclick="window.history.back()" class="btn btn-secondary">← Back</button>
+</div> *@
+
+<style>
+    /* === SkyHigh Airlines | Booking Details Styling === */
+
+    .booking-details-container {
+        max-width: 700px;
+        margin: 40px auto 0 auto;
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        padding: 45px 38px 38px 38px;
+        text-align: center;
+        border-top: 5px solid #007bff;
+    }
+
+        .booking-details-container h2 {
+            font-size: 2.2rem;
+            color: #334155; /* deep slate blue */
+            font-weight: 700;
+            margin-bottom: 25px;
+            letter-spacing: 0.5px;
+        }
+
+    .booking-table th {
+        background: #007bff; /* SkyHigh blue */
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.05rem;
+        padding: 10px 8px;
+        border: none;
+    }
+
+    .booking-table td {
+        background: #f8fafc; /* very light gray-blue */
+        color: #1e293b;
+        font-size: 1.04rem;
+        padding: 10px 8px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .booking-info {
+        margin-bottom: 10px;
+        font-size: 1.05rem;
+        color: #334155;
+        text-align: left;
+    }
+
+    .payment-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 24px 0 12px 0;
+        color: #007bff;
+        border-left: 4px solid #00bcd4;
+        padding-left: 10px;
+    }
+
+    .booking-actions {
+        margin-top: 25px;
+        display: flex;
+        gap: 18px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-download {
+        background: linear-gradient(90deg, #007bff, #00bcd4);
+        color: #fff;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 12px 30px;
+        border: none;
+        font-size: 1.05rem;
+        text-decoration: none;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+        .btn-download:hover {
+            background: linear-gradient(90deg, #00bcd4, #007bff);
+            transform: translateY(-2px);
+            color: #fff;
+        }
+
+    .btn-cancel {
+        background-color: #dc3545;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 12px 30px;
+        border: none;
+        font-size: 1.05rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+        .btn-cancel:hover {
+            background-color: #b52a37;
+            transform: translateY(-2px);
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .booking-details-container {
+            padding: 30px 20px;
+        }
+
+            .booking-details-container h2 {
+                font-size: 1.8rem;
+            }
+
+        .booking-actions {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-download,
+        .btn-cancel {
+            width: 100%;
+        }
+    }
+</style>
+
+
+<div style="margin-top:28px; text-align:center;">
+    <button onclick="window.history.back()" class="btn btn-secondary">← Back</button>
+</div>
+
+
+
+
+
+

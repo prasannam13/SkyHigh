@@ -1,0 +1,311 @@
+﻿@model SkyHigh.Models.Flight
+
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<div class="edit-flight-card" data-aos="fade-up">
+<h2 class="text-center mb-4">✈️ Edit Flight</h2>
+ 
+        <form asp-action="EditFlight" asp-controller="Flight" method="post" autocomplete="off" novalidate class="edit-flight-form">
+            @Html.AntiForgeryToken()
+ 
+            <input asp-for="FlightId" type="hidden" />
+ 
+            <div>
+<label asp-for="FlightNo"></label>
+<input asp-for="FlightNo" class="form-control" />
+<span asp-validation-for="FlightNo" class="text-danger small"></span>
+</div>
+ 
+            <div>
+<label asp-for="Source"></label>
+<input asp-for="Source" class="form-control" />
+<span asp-validation-for="Source" class="text-danger small"></span>
+</div>
+ 
+            <div>
+<label asp-for="Destination"></label>
+<input asp-for="Destination" class="form-control" />
+<span asp-validation-for="Destination" class="text-danger small"></span>
+</div>
+ 
+            <div>
+<label asp-for="DepartureTime"></label>
+<input asp-for="DepartureTime" type="datetime-local" class="form-control"
+                       value="@Model.DepartureTime.ToString("yyyy-MM-ddTHH:mm")" />
+<span asp-validation-for="DepartureTime" class="text-danger small"></span>
+</div>
+ 
+            <div>
+<label asp-for="ArrivalTime"></label>
+<input asp-for="ArrivalTime" type="datetime-local" class="form-control"
+                       value="@Model.ArrivalTime.ToString("yyyy-MM-ddTHH:mm")" />
+<span asp-validation-for="ArrivalTime" class="text-danger small"></span>
+</div>
+ 
+            <div>
+<label asp-for="Duration"></label>
+<input asp-for="Duration" type="number" class="form-control" />
+<span asp-validation-for="Duration" class="text-danger small"></span>
+</div>
+ 
+            <div>
+<label asp-for="EconomyFare"></label>
+<input asp-for="EconomyFare" type="number" class="form-control" />
+<span asp-validation-for="EconomyFare" class="text-danger small"></span>
+</div>
+ 
+            <div>
+<label asp-for="BusinessFare"></label>
+<input asp-for="BusinessFare" type="number" class="form-control" />
+<span asp-validation-for="BusinessFare" class="text-danger small"></span>
+</div>
+ 
+            <div>
+<label asp-for="HasBusinessClass"></label>
+<select asp-for="HasBusinessClass" class="form-select">
+<option value="">-- Select --</option>
+<option value="true" selected="@(Model.HasBusinessClass)">Yes</option>
+<option value="false" selected="@(!Model.HasBusinessClass)">No (All seats will be Economy)</option>
+</select>
+<span asp-validation-for="HasBusinessClass" class="text-danger small"></span>
+</div>
+ 
+            <button type="submit" class="save-btn">Save Changes</button>
+<button type="button" class="back-btn" onclick="window.history.back();">← Back</button>
+</form>
+</div>
+
+
+<style>
+
+    /* Center the entire page content */
+
+    .edit-flight-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 85vh;
+        background-color: #f6f9fb; /* Matches project theme */
+
+        padding: 20px;
+    }
+
+    /* Card-style form */
+
+    .edit-flight-card {
+        position: relative;
+        margin: 0 auto; /* center horizontally */
+
+        top: 5vh; /* halfway down the viewport */
+
+        transform: translateY(-50%); /* pull it up by half its height */
+
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+        border-radius: 14px;
+        padding: 30px 35px;
+        width: 100%;
+        max-width: 480px;
+    }
+
+
+        .edit-flight-card h2 {
+            color: #334155;
+            font-weight: 700;
+        }
+
+    .edit-flight-form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+        .edit-flight-form label {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .edit-flight-form input,
+        .edit-flight-form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .edit-flight-form input:focus,
+            .edit-flight-form select:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+            }
+
+    .save-btn {
+        margin-top: 20px;
+        padding: 12px;
+        font-size: 16px;
+        background: linear-gradient(90deg, #007bff, #00bcd4);
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .save-btn:hover {
+            background: linear-gradient(90deg, #00bcd4, #007bff);
+            transform: scale(1.03);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.4);
+        }
+
+    /* ===== Back Button Below Save ===== */
+
+    .back-btn {
+        margin-top: 12px;
+        padding: 12px;
+        font-size: 16px;
+        background: linear-gradient(90deg, #007bff, #00bcd4);
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+        .back-btn:hover {
+            background: linear-gradient(90deg, #00bcd4, #007bff);
+            transform: scale(1.03);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.4);
+        }
+
+    /* === Realistic Airline Sky Background with Moving Clouds & Light Rays === */
+
+    body {
+        position: relative;
+        overflow-x: hidden;
+        background: linear-gradient(to top, #e7edf4 0%, #ffffff 70%, #c5d7e6 100%);
+    }
+
+        /*  Cloud layer 1 - Farther, slow-moving */
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            z-index: -3;
+            background: url('/images/6705916b-ce0d-4dca-ba3e-296bf3d3a83d.png') repeat-x center bottom;
+            background-size: cover;
+            opacity: 0.55;
+            animation: skyDrift1 160s linear infinite;
+            filter: brightness(1.05) contrast(1.05) saturate(1.1);
+        }
+
+        /* Cloud layer 2 - Closer, faster drift */
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            z-index: -2;
+            background: url('/images/6705916b-ce0d-4dca-ba3e-296bf3d3a83d.png') repeat-x center bottom;
+            background-size: cover;
+            opacity: 0.75;
+            animation: skyDrift2 90s linear infinite;
+            filter: brightness(1.05) contrast(1.1);
+        }
+
+        /* Light rays overlay (shimmering diagonal light) */
+
+        body::marker, html::before {
+            display: none;
+        }
+
+    /* avoid unexpected markers */
+
+    html::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: repeating-linear-gradient( 120deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 2%, rgba(255, 255, 255, 0.05) 4% );
+        background-size: 300% 300%;
+        mix-blend-mode: overlay;
+        animation: sunRays 80s linear infinite;
+    }
+
+    /* === Keyframes === */
+
+    @@keyframes skyDrift1 {
+
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-25%);
+        }
+    }
+
+    @@keyframes skyDrift2 {
+
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    @@keyframes sunRays {
+
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    /* === Optional: slight white mist at bottom for realism === */
+
+    body::selection {
+        background: transparent;
+    }
+
+    footer::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 150px;
+        background: linear-gradient(to top, rgba(255,255,255,0.7), transparent);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    }</style>
+
+

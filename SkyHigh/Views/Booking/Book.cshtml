@@ -1,0 +1,324 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var departureFlight = ViewBag.Flight as SkyHigh.Models.Flight;
+    var returnFlight = ViewBag.ReturnFlight as SkyHigh.Models.Flight;
+    var departureSeats = ViewBag.Seats as List<SkyHigh.Models.Seat> ?? new List<SkyHigh.Models.Seat>();
+    var returnSeats = ViewBag.ReturnSeats as List<SkyHigh.Models.Seat> ?? new List<SkyHigh.Models.Seat>();
+    var tripType = ViewBag.TripType as string ?? "OneWay";
+}
+
+<div class="container py-5">
+    <h2 class="text-center fw-bold text-primary mb-4">✈️ Seat Selection</h2>
+
+    <form method="post" asp-action="Book" id="bookingForm" autocomplete="off">
+        <input type="hidden" name="TripType" value="@tripType" />
+        <input type="hidden" name="flightId" value="@departureFlight?.FlightId" />
+        <input type="hidden" name="returnFlightId" value="@returnFlight?.FlightId" />
+
+        <div class="@(tripType == "RoundTrip" ? "row" : "d-flex justify-content-center")">
+
+            <!-- Departure Flight -->
+            <div class="@(tripType == "RoundTrip" ? "col-md-6" : "col-md-8") mb-4">
+                <h4 class="text-center text-primary mb-2">Departure Flight: @departureFlight?.FlightNo</h4>
+
+                <!-- Seat layout (display only) -->
+                <div class="seat-layout rounded-4 p-3 mb-3" style="background:#f8f8ff;">
+                    @foreach (var group in departureSeats.GroupBy(s => int.Parse(s.SeatNo[..^1])).OrderBy(g => g.Key))
+                    {
+                        <div class="d-flex justify-content-center mb-1 seat-row">
+                            @foreach (var seat in group.OrderBy(s => s.SeatNo))
+                            {
+                                var cls = seat.IsBooked ? "booked" :
+                                (seat.Type?.Trim().ToLower() == "vip" ? "business" : "economy");
+                                <div class="seat @cls" title="@seat.Type - ₹@seat.Price">
+                                    <span>@seat.SeatNo<br /><small>₹@seat.Price</small></span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="text-center mb-3">
+                    <span class="legend booked"></span> Booked
+                    <span class="legend business"></span> Business
+                    <span class="legend economy"></span> Economy
+                </div>
+
+                <h5 class="text-primary text-center mt-3 mb-3">Departure Flight Passengers</h5>
+                <div id="departurePassengers" class="passenger-section mb-3"></div>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" id="addDep" class="btn btn-info btn-sm">Add Passenger</button>
+                    <button type="button" id="removeDep" class="btn btn-secondary btn-sm">Remove Passenger</button>
+                </div>
+            </div>
+
+            <!-- Return Flight -->
+            @if (tripType == "RoundTrip" && returnFlight != null)
+            {
+                <div class="col-md-6 mb-4">
+                    <h4 class="text-center text-primary mb-2">Return Flight: @returnFlight.FlightNo</h4>
+
+                    <div class="seat-layout rounded-4 p-3 mb-3" style="background:#f8f8ff;">
+                        @foreach (var group in returnSeats.GroupBy(s => int.Parse(s.SeatNo[..^1])).OrderBy(g => g.Key))
+                        {
+                            <div class="d-flex justify-content-center mb-1 seat-row">
+                                @foreach (var seat in group.OrderBy(s => s.SeatNo))
+                                {
+                                    var cls = seat.IsBooked ? "booked" :
+                                    (seat.Type?.Trim().ToLower() == "vip" ? "business" : "economy");
+                                    <div class="seat @cls" title="@seat.Type - ₹@seat.Price">
+                                        <span>@seat.SeatNo<br /><small>₹@seat.Price</small></span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <span class="legend booked"></span> Booked
+                        <span class="legend business"></span> Business
+                        <span class="legend economy"></span> Economy
+                    </div>
+
+                    <h5 class="text-primary text-center mt-3 mb-3">Return Flight Passengers</h5>
+                    <div id="returnPassengers" class="passenger-section mb-3"></div>
+
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="button" id="addRet" class="btn btn-info btn-sm">Add Passenger</button>
+                        <button type="button" id="removeRet" class="btn btn-secondary btn-sm">Remove Passenger</button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="button" id="verifyBtn" class="btn btn-primary px-5 py-2">Reserve</button>
+        </div>
+    </form>
+</div>
+
+<!-- Verify Modal -->
+<div id="verifyModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:22px; border-radius:10px; width:92%; max-width:820px;">
+        <h3 class="text-primary text-center mb-3">Verify Booking Details</h3>
+        <div id="verifyTables" class="table-responsive"></div>
+        <div class="text-center mt-3">
+            <button id="confirmBookingBtn" class="btn btn-success me-2">Confirm</button>
+            <button id="editBookingBtn" class="btn btn-secondary">Edit</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .seat {
+        width: 52px;
+        height: 52px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        margin: 3px;
+        font-weight: 700;
+    }
+
+    .booked {
+        background: #7e8893;
+        color: #fff;
+    }
+
+    .business {
+        background: linear-gradient(135deg,#ffd700,#fffbe6);
+        color: #9c8700;
+        border: 1px solid #ffe066;
+    }
+
+    .economy {
+        background: linear-gradient(135deg,#87ceeb,#eaf2fb);
+        color: #222;
+    }
+
+    .legend {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        margin: 0 6px;
+        vertical-align: middle;
+        border-radius: 4px;
+    }
+
+        .legend.booked {
+            background: #7e8893;
+        }
+
+        .legend.business {
+            background: #FFD700;
+        }
+
+        .legend.economy {
+            background: #87CEEB;
+        }
+
+    .passenger-section {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .passenger-card {
+        background: #fff;
+        padding: 14px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+        .passenger-card h6 {
+            width: 100%;
+            margin: 0 0 6px 0;
+            color: #007bff;
+        }
+
+    .form-control {
+        min-width: 180px;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        table th {
+            background: #f7f7f7;
+            font-weight: 700;
+        }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const departureAvailableSeats = @Html.Raw(
+                                                Newtonsoft.Json.JsonConvert.SerializeObject(
+                                                                ((ViewBag.Seats as List<SkyHigh.Models.Seat>) ?? new List<SkyHigh.Models.Seat>())
+                                                                .Where(s => !s.IsBooked)
+                                                                .Select(s => new { s.SeatNo, s.Price, s.Type })
+                                                )
+                                );
+
+        const returnAvailableSeats = @Html.Raw(
+                                                Newtonsoft.Json.JsonConvert.SerializeObject(
+                                                                ((ViewBag.ReturnSeats as List<SkyHigh.Models.Seat>) ?? new List<SkyHigh.Models.Seat>())
+                                                                .Where(s => !s.IsBooked)
+                                                                .Select(s => new { s.SeatNo, s.Price, s.Type })
+                                                )
+                                );
+
+        let depCount = 0, retCount = 0;
+
+        const buildSeatOptionsHtml = (seats) =>
+            seats.map(s => `<option value="${s.SeatNo}">${s.SeatNo} (${s.Type} ₹${s.Price})</option>`).join('');
+
+        function addPassenger(type) {
+            const idx = (type === 'departure') ? depCount++ : retCount++;
+            const container = document.getElementById(type + 'Passengers');
+            if (!container) return;
+            const card = document.createElement('div');
+            card.className = 'passenger-card';
+            card.innerHTML = `
+                <h6>Passenger ${idx + 1}</h6>
+                <input required name="${type}Passengers[${idx}].Name" class="form-control" placeholder="Name" />
+                <input required name="${type}Passengers[${idx}].Age" type="number" min="0" class="form-control" placeholder="Age" />
+                <select required name="${type}Passengers[${idx}].Gender" class="form-control">
+                    <option value="">Gender</option><option>Male</option><option>Female</option><option>Other</option>
+                </select>
+                <select multiple required name="${type}Passengers[${idx}].SeatNos" class="form-control seat-select" size="5">
+                    <option value="">Select Seats</option>
+                    ${type === 'departure' ? buildSeatOptionsHtml(departureAvailableSeats) : buildSeatOptionsHtml(returnAvailableSeats)}
+                </select>`;
+            container.appendChild(card);
+            updateSelectedSeats(type);
+        }
+
+        function removePassenger(type) {
+            const container = document.getElementById(type + 'Passengers');
+            if (container && container.lastElementChild) {
+                container.removeChild(container.lastElementChild);
+                if (type === 'departure') depCount = Math.max(0, depCount - 1);
+                else retCount = Math.max(0, retCount - 1);
+            }
+            updateSelectedSeats(type);
+        }
+
+        function updateSelectedSeats(type) {
+            const allSelectors = document.querySelectorAll(`#${type}Passengers .seat-select`);
+            let selectedSeats = [];
+            allSelectors.forEach(sel => {
+                Array.from(sel.selectedOptions).forEach(opt => selectedSeats.push(opt.value));
+            });
+            allSelectors.forEach(sel => {
+                const current = Array.from(sel.selectedOptions).map(opt => opt.value);
+                Array.from(sel.options).forEach(opt => {
+                    if (selectedSeats.includes(opt.value) && !current.includes(opt.value)) {
+                        opt.disabled = true; opt.style.color = "#aaa";
+                    } else { opt.disabled = false; opt.style.color = "#000"; }
+                });
+            });
+        }
+
+        document.addEventListener("change", (e) => {
+            if (e.target.classList.contains("seat-select")) {
+                if (e.target.closest("#departurePassengers")) updateSelectedSeats("departure");
+                if (e.target.closest("#returnPassengers")) updateSelectedSeats("return");
+            }
+        });
+
+        document.getElementById('addDep')?.addEventListener('click', () => addPassenger('departure'));
+        document.getElementById('removeDep')?.addEventListener('click', () => removePassenger('departure'));
+        document.getElementById('addRet')?.addEventListener('click', () => addPassenger('return'));
+        document.getElementById('removeRet')?.addEventListener('click', () => removePassenger('return'));
+
+        addPassenger('departure');
+        if (document.getElementById('returnPassengers')) addPassenger('return');
+
+        document.getElementById('verifyBtn').addEventListener('click', () => {
+            const verifyDiv = document.getElementById('verifyTables');
+            verifyDiv.innerHTML = '';
+            const buildTable = (id, title) => {
+                const cont = document.getElementById(id);
+                if (!cont || cont.children.length === 0) return '';
+                let html = `<h5 class='text-primary mt-3 mb-2'>${title}</h5>`;
+                html += `<table class='table table-bordered text-center'><thead><tr><th>Name</th><th>Age</th><th>Gender</th><th>Seats</th></tr></thead><tbody>`;
+                for (const c of cont.children) {
+                    const n = c.querySelector('input[name*=".Name"]').value;
+                    const a = c.querySelector('input[name*=".Age"]').value;
+                    const g = c.querySelector('select[name*=".Gender"]').value;
+                    const s = Array.from(c.querySelector('select[name*=".SeatNos"]').selectedOptions).map(o => o.value).join(", ");
+                    html += `<tr><td>${n}</td><td>${a}</td><td>${g}</td><td>${s}</td></tr>`;
+                }
+                html += `</tbody></table>`;
+                return html;
+            };
+            verifyDiv.innerHTML += buildTable('departurePassengers', 'Departure Flight');
+            if (document.getElementById('returnPassengers'))
+                verifyDiv.innerHTML += buildTable('returnPassengers', 'Return Flight');
+            document.getElementById('verifyModal').style.display = 'flex';
+        });
+
+        document.getElementById('editBookingBtn').addEventListener('click', () =>
+            document.getElementById('verifyModal').style.display = 'none');
+
+        document.getElementById('confirmBookingBtn').addEventListener('click', () =>
+            document.getElementById('bookingForm').submit());
+    });
+</script>
+
+

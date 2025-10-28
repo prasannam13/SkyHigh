@@ -1,0 +1,108 @@
+﻿@model IEnumerable<SkyHigh.Models.Booking>
+@{
+    ViewData["Title"] = "My Bookings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <h2 class="fw-bold text-primary text-center mb-4">
+        <i class="bi bi-ticket-detailed"></i> My Bookings
+    </h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info text-center mt-5">
+            You don’t have any bookings yet.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm rounded-4">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-primary text-center">
+                    <tr>
+                        <th>PNR</th>
+                        <th>Flight No</th>
+                        <th>Trip Type</th>
+                        <th>Seats</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    @foreach (var booking in Model.OrderByDescending(b => b.BookingDate))
+                    {
+                        var isConfirmed = booking.Status == "Confirmed" || booking.Status == "Success";
+                        var isPending = booking.Status == "Pending" || booking.Status == "Pending Payment";
+                        var isCancelled = booking.Status == "Cancelled";
+
+                        <tr>
+                            <td><strong>@booking.PNR</strong></td>
+                            <td>@booking.Flight?.FlightNo</td>
+                            <td>@booking.TripType</td>
+                            <td>@booking.SeatsBooked</td>
+                            <td>@booking.BookingDate.ToString("dd MMM yyyy")</td>
+                            
+
+                            <td>
+                                @if (isConfirmed)
+                                {
+                                    <span class="badge bg-success">Confirmed</span>
+                                }
+                                else if (isPending)
+                                {
+                                    <span class="badge bg-warning text-dark">Pending Payment</span>
+                                }
+                                else if (isCancelled)
+                                {
+                                    <span class="badge bg-secondary">Cancelled</span>
+                                }
+                            </td>
+
+                            <td>₹@booking.TotalAmount.ToString("N2")</td>
+
+                            <td>
+
+                                @if (isConfirmed)
+                                {
+                                    <a asp-controller="Booking" asp-action="ViewBooking" asp-route-bookingId="@booking.BookingId"
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                }
+                                else if (isPending)
+                                {
+                                    <a asp-controller="Booking" asp-action="Payment" asp-route-bookingId="@booking.BookingId"
+                                       class="btn btn-primary btn-sm shadow-sm">
+                                        <i class="bi bi-credit-card"></i> Pay Now
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<style>
+    .btn-primary {
+        background: linear-gradient(135deg, #00bcd4, #0078d7);
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0078d7, #00bcd4);
+            transform: scale(1.05);
+        }
+
+    .badge {
+        font-size: 13px;
+        padding: 6px 10px;
+        border-radius: 6px;
+    }
+</style>
+

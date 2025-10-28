@@ -1,0 +1,181 @@
+﻿
+@model SkyHigh.Models.Flight
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-center">
+    <div class="centerbox" style="max-width:460px;">
+        <h2 class="text-center">Add Flight</h2>
+
+        <form asp-action="AddFlight" asp-controller="Flight" method="post" autocomplete="off" novalidate style="display:flex; flex-direction:column; gap:18px;">
+            @Html.AntiForgeryToken()
+
+            <div>
+                <label asp-for="FlightNo"></label>
+                <input asp-for="FlightNo" class="form-control" style="width:100%; padding:8px;" />
+                <span asp-validation-for="FlightNo" class="text-danger small"></span>
+            </div>
+
+            <div>
+                <label asp-for="Source"></label>
+                <input asp-for="Source" class="form-control" style="width:100%; padding:8px;" />
+                <span asp-validation-for="Source" class="text-danger small"></span>
+            </div>
+
+            <div>
+                <label asp-for="Destination"></label>
+                <input asp-for="Destination" class="form-control" style="width:100%; padding:8px;" />
+                <span asp-validation-for="Destination" class="text-danger small"></span>
+            </div>
+
+            <div>
+                <label asp-for="DepartureTime"></label>
+                <input asp-for="DepartureTime" type="datetime-local" class="form-control" style="width:100%; padding:8px;" />
+                <span asp-validation-for="DepartureTime" class="text-danger small"></span>
+            </div>
+
+            <div>
+                <label asp-for="ArrivalTime"></label>
+                <input asp-for="ArrivalTime" type="datetime-local" class="form-control" style="width:100%; padding:8px;" />
+                <span asp-validation-for="ArrivalTime" class="text-danger small"></span>
+            </div>
+
+            <div>
+                <label asp-for="Duration"></label>
+                <input asp-for="Duration" type="number" class="form-control" style="width:100%; padding:8px;" />
+                <span asp-validation-for="Duration" class="text-danger small"></span>
+            </div>
+
+            <div>
+                <label asp-for="EconomyFare"></label>
+                <input asp-for="EconomyFare" type="number" class="form-control" style="width:100%; padding:8px;" />
+                <span asp-validation-for="EconomyFare" class="text-danger small"></span>
+            </div>
+
+            <div>
+                <label asp-for="BusinessFare"></label>
+                <input asp-for="BusinessFare" type="number" class="form-control" style="width:100%; padding:8px;" />
+                <span asp-validation-for="BusinessFare" class="text-danger small"></span>
+            </div>
+
+            <div>
+                <label asp-for="HasBusinessClass"></label>
+                <select asp-for="HasBusinessClass" class="form-select" style="width:100%; padding:8px;">
+                    <option value="">-- Select --</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No (All seats will be Economy)</option>
+                </select>
+                <span asp-validation-for="HasBusinessClass" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" style="margin-top:18px; padding:10px; font-size:16px; background:#007bff; color:#fff; border:none; border-radius:4px;">Add Flight</button>
+        </form>
+    </div>
+
+    <style>
+        .page-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: url('/enhanced-ui/skyclear-bg.png') no-repeat center center fixed;
+            background-size: cover;
+            backdrop-filter: blur(4px);
+        }
+
+        .centerbox {
+            max-width: 460px;
+            width: 100%;
+            padding: 32px 26px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 123, 255, 0.1);
+            animation: fadeIn 0.6s ease-in;
+        }
+
+            .centerbox h2 {
+                text-align: center;
+                margin-bottom: 24px;
+                color: #1E293B;
+                font-weight: 700;
+                font-size: 1.7rem;
+            }
+
+            .centerbox label {
+                display: block;
+                margin-bottom: 6px;
+                color: #1E293B;
+                font-weight: 500;
+            }
+
+            .centerbox input,
+            .centerbox select {
+                width: 100%;
+                padding: 10px;
+                border: 1.2px solid #c5cae9;
+                border-radius: 8px;
+                font-size: 1rem;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+
+                .centerbox input:focus,
+                .centerbox select:focus {
+                    border-color: #007bff;
+                    outline: none;
+                    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+                }
+
+            .centerbox button {
+                margin-top: 18px;
+                padding: 10px;
+                font-size: 16px;
+                background: #007bff;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                transition: all 0.25s ease;
+            }
+
+                .centerbox button:hover {
+                    background: #0056b3;
+                    transform: translateY(-2px);
+                }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            background: url('/enhanced-ui/skyblur-bg.png') repeat-x;
+            background-size: cover;
+            animation: cloudsMove 30s linear infinite;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        @@keyframes cloudsMove {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: -1000px 0;
+            }
+        }
+    </style>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

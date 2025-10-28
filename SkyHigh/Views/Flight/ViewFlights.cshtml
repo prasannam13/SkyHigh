@@ -1,0 +1,138 @@
+﻿
+
+@model IEnumerable<SkyHigh.Models.Flight>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        margin: 50px auto;
+        width: 90%;
+        max-width: 1100px;
+    }
+
+    h2 {
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 30px;
+        font-size: 2rem;
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 1rem;
+        text-align: center;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    th {
+        background-color: #222;
+        color: white;
+        padding: 15px 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    td {
+        padding: 15px 10px;
+        color: #444;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f5f5f5;
+    }
+
+    .action-btn {
+        border: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        color: white;
+        font-size: 0.95rem;
+        cursor: pointer;
+        margin: 0 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: 0.3s ease;
+    }
+
+        .action-btn i {
+            font-size: 1rem;
+        }
+
+    .btn-edit {
+        background-color: #0d6efd;
+    }
+
+        .btn-edit:hover {
+            background-color: #0b5ed7;
+        }
+
+    .btn-delete {
+        background-color: #dc3545;
+    }
+
+        .btn-delete:hover {
+            background-color: #bb2d3b;
+        }
+
+    .btn-seats {
+        background-color: #198754;
+    }
+
+        .btn-seats:hover {
+            background-color: #157347;
+        }
+</style>
+
+<div class="card">
+    <h2>All Flights</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Departure</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var flight in Model)
+            {
+                <tr>
+                    <td>@flight.FlightNo</td>
+                    <td>@flight.Source</td>
+                    <td>@flight.Destination</td>
+                    <td>@flight.DepartureTime.ToString("dd-MM-yyyy HH:mm:ss")</td>
+                    <td>
+                        <a asp-action="EditFlight" asp-route-id="@flight.FlightId" class="action-btn btn-edit">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                        </a>
+                        <a asp-action="DeleteFlight" asp-route-id="@flight.FlightId" class="action-btn btn-delete">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </a>
+                        <a asp-action="ViewSeats" asp-route-flightid="@flight.FlightId" class="action-btn btn-seats">
+                            <i class="fa-solid fa-chair"></i> Seats
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

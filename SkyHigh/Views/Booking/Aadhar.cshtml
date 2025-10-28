@@ -1,0 +1,162 @@
+﻿@model SkyHigh.Models.AadharViewModel
+
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var booking = ViewBag.Booking as SkyHigh.Models.Booking;
+
+    var flight = ViewBag.Booking?.Flight as SkyHigh.Models.Flight;
+
+}
+
+<div class="container py-5">
+    <div class="card shadow-sm p-4 border-0 rounded-4">
+        <h3 class="text-center text-primary mb-4">Aadhaar Verification</h3>
+
+        @if (booking != null)
+
+        {
+            <div class="mb-3">
+                <strong>PNR:</strong> @booking.PNR <br />
+                <strong>Travel Date:</strong> @booking.BookingDate.ToString("dd MMM yyyy") <br />
+                <strong>Passenger seats:</strong> @(booking.Passengers?.Count ?? 0) <br />
+                <strong>Total:</strong> ₹ @booking.TotalAmount
+            </div>
+
+        }
+
+
+        <form asp-action="Aadhar" method="post" novalidate>
+            <input type="hidden" asp-for="BookingId" />
+
+            <div class="mb-3">
+                <label asp-for="AadharNumber" class="form-label"></label>
+                <input asp-for="AadharNumber" class="form-control" maxlength="12" />
+                <span asp-validation-for="AadharNumber" class="text-danger"></span>
+                <div class="form-text">Enter your 12-digit Aadhaar (numbers only).</div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary px-5 py-2 rounded-3 shadow-sm">Verify Aadhaar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+
+    @{
+
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+    }
+
+}
+<style>
+
+    
+
+    .aadhar-card {
+
+        animation: fadeInUp 1s ease forwards;
+
+        transform: translateY(25px);
+
+        opacity: 0;
+
+        background: #ffffff;
+
+        border: none;
+
+        border-radius: 20px;
+
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+
+    }
+
+    @@keyframes fadeInUp {
+
+        to {
+
+            transform: translateY(0);
+
+            opacity: 1;
+
+        }
+
+    }
+
+    /*  Header text harmonized with brand palette */
+
+    .aadhar-header {
+
+        text-align: center;
+
+        color: #0f3057; /* same family as your header/nav tone */
+
+        font-weight: 700;
+
+        margin-bottom: 25px;
+
+        letter-spacing: 0.5px;
+
+    }
+
+    /* Button accent in warm navy-blue tone */
+
+    .aadhar-btn {
+
+        background-color: #1e4679; /* blends with your header/nav bar */
+
+        border: none;
+
+        transition: all 0.3s ease;
+
+    }
+
+        .aadhar-btn:hover {
+
+            background-color: #16385f;
+
+            transform: scale(1.05);
+
+            box-shadow: 0 6px 12px rgba(30, 70, 121, 0.3);
+
+        }
+
+
+    body {
+
+        background: linear-gradient(120deg, #b9d6eb, #e8eff8, #ffffff);
+
+        background-size: 400% 400%;
+
+        animation: gradientDawn 40s ease infinite;
+
+    }
+
+    @@keyframes gradientDawn {
+
+        0% {
+
+            background-position: 0% 50%;
+
+        }
+
+        50% {
+
+            background-position: 100% 50%;
+
+        }
+
+        100% {
+
+            background-position: 0% 50%;
+
+        }
+
+    }
+</style>
+
+

@@ -1,0 +1,352 @@
+﻿
+@model IEnumerable<SkyHigh.Models.Seat>
+
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var vipSeats = Model.Where(s => s.Type == "VIP").ToList();
+
+    var economySeats = Model.Where(s => s.Type == "Normal").ToList();
+
+    int seatsPerRow = 5;
+
+    int vipRows = (int)Math.Ceiling(vipSeats.Count / (double)seatsPerRow);
+
+    int economyRows = (int)Math.Ceiling(economySeats.Count / (double)seatsPerRow);
+
+}
+
+<div class="view-seats-wrapper">
+    <div class="seat-container">
+
+        <!--  Back Button -->
+        <div class="back-button-wrapper">
+            <button type="button" class="back-btn" onclick="history.back()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+
+                Back
+            </button>
+        </div>
+
+        <h2 class="page-title">Flight Seats</h2>
+
+        <!-- Business Class -->
+        @if (vipSeats.Any())
+
+        {
+            <div class="class-section">
+                <h3 class="class-title">Business Class</h3>
+
+                @for (int r = 0; r < vipRows; r++)
+
+                {
+                    <div class="seat-row">
+
+                        @for (int c = 0; c < seatsPerRow; c++)
+
+                        {
+
+                            int idx = r * seatsPerRow + c;
+
+                            if (idx < vipSeats.Count)
+
+                            {
+
+                                var seat = vipSeats[idx];
+                                <div class="seat-card business @(seat.IsBooked ? "booked" : "available")" style="background-color:@seat.Color;">
+                                    <h4>@seat.SeatNo</h4>
+                                    <p>@seat.Type</p>
+                                    <p>₹@seat.Price</p>
+                                    <span class="status">@((seat.IsBooked) ? "Booked" : "Available")</span>
+                                </div>
+
+                            }
+
+                        }
+                    </div>
+
+                }
+            </div>
+
+        }
+
+        <!-- Economy Class -->
+        @if (economySeats.Any())
+
+        {
+            <div class="class-section">
+                <h3 class="class-title">Economy Class</h3>
+
+                @for (int r = 0; r < economyRows; r++)
+
+                {
+                    <div class="seat-row">
+
+                        @for (int c = 0; c < seatsPerRow; c++)
+
+                        {
+
+                            int idx = r * seatsPerRow + c;
+
+                            if (idx < economySeats.Count)
+
+                            {
+
+                                var seat = economySeats[idx];
+                                <div class="seat-card economy @(seat.IsBooked ? "booked" : "available")" style="background-color:@seat.Color;">
+                                    <h4>@seat.SeatNo</h4>
+                                    <p>@seat.Type</p>
+                                    <p>₹@seat.Price</p>
+                                    <span class="status">@((seat.IsBooked) ? "Booked" : "Available")</span>
+                                </div>
+
+                            }
+
+                        }
+                    </div>
+
+                }
+            </div>
+
+        }
+
+        @* @foreach (var seat in Model)
+
+        {
+            <div class="seat-box @(seat.IsBooked ? "booked" : "available")">
+                <span>@seat.SeatNo</span>
+
+                @if (seat.IsBooked)
+
+                {
+                    <span class="badge bg-danger">Booked</span>
+
+                }
+            </div>
+
+        } *@
+    </div>
+</div>
+
+<style>
+
+    /* ====== Layout ====== */
+
+    .view-seats-wrapper {
+        display: flex;
+        justify-content: center;
+        padding: 20px 10px;
+        background: #f4f6f9;
+    }
+
+    .seat-container {
+        background: #ffffff;
+        max-width: 900px;
+        width: 100%;
+        padding: 20px 25px;
+        border-radius: 14px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    .seat-box.booked {
+        background-color: #ffcccc;
+        cursor: not-allowed;
+    }
+
+    .seat-box.available {
+        background-color: #c8f7c5;
+    }
+
+    /* ====== Back Button ====== */
+
+    .back-button-wrapper {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .back-btn {
+        background-color: #0078d7;
+        color: #fff;
+        border: none;
+        padding: 8px 18px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+        box-shadow: 0 2px 6px rgba(0, 120, 215, 0.3);
+    }
+
+        .back-btn .icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .back-btn:hover {
+            background-color: #005fa3;
+            transform: translateX(-3px);
+            box-shadow: 0 4px 10px rgba(0, 120, 215, 0.4);
+        }
+
+        .back-btn:active {
+            transform: translateX(0);
+        }
+
+    /* ====== Page Title ====== */
+
+    .page-title {
+        text-align: center;
+        font-size: 1.7rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+    }
+
+    /* ====== Section Headings ====== */
+
+    .class-section {
+        margin-bottom: 35px;
+    }
+
+    .class-title {
+        font-size: 1.3rem;
+        color: #222;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 14px;
+        padding-bottom: 4px;
+        border-bottom: 2px solid #0078d7;
+        width: 100%;
+    }
+
+    /* ====== Seat Layout ====== */
+
+    .seat-row {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    /* ====== Seat Cards ====== */
+
+    .seat-card {
+        border-radius: 12px;
+        text-align: center;
+        padding: 8px;
+        font-family: 'Segoe UI', sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+        .seat-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .seat-card p {
+            font-size: 0.8rem;
+            margin: 0;
+            color: #222;
+        }
+
+    .status {
+        margin-top: 6px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        display: inline-block;
+        font-weight: 600;
+    }
+
+    /* ====== Business & Economy Styles ====== */
+
+    .business {
+        width: 105px;
+        height: 105px;
+        background: linear-gradient(145deg, #fff4b8, #ffe082);
+    }
+
+    .economy {
+        width: 90px;
+        height: 90px;
+    }
+
+    /* ====== Seat States ====== */
+
+    .available {
+        box-shadow: 0 2px 6px rgba(0, 128, 0, 0.15);
+    }
+
+        .available .status {
+            background: #c8ffe1;
+            color: #046b31;
+        }
+
+    .booked {
+        filter: grayscale(0.6);
+        opacity: 0.7;
+    }
+
+        .booked .status {
+            background: #ffb3b3;
+            color: #a10000;
+        }
+
+    /* ====== Hover Effects ====== */
+
+    .available:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+
+    /* ====== Responsive Design ====== */
+
+    @@media (max-width: 768px) {
+
+        .seat-card.business {
+            width: 85px;
+            height: 85px;
+        }
+
+        .seat-card.economy {
+            width: 75px;
+            height: 75px;
+        }
+
+        .seat-row {
+            gap: 7px;
+        }
+
+        .seat-container {
+            padding: 15px;
+        }
+
+        .back-btn {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+        }
+
+            .back-btn .icon {
+                width: 16px;
+                height: 16px;
+            }
+    }
+</style>
+
+
+
+
+
+

@@ -1,0 +1,138 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var outBooking = ViewBag.OutBooking as SkyHigh.Models.Booking;
+    var retBooking = ViewBag.ReturnBooking as SkyHigh.Models.Booking;
+    var outGST = (double)(ViewBag.OutGST ?? 0.0);
+    var retGST = (double)(ViewBag.RetGST ?? 0.0);
+    var outTotal = (double)(ViewBag.OutTotal ?? 0.0);
+    var retTotal = (double)(ViewBag.RetTotal ?? 0.0);
+    var outRate = (double)(ViewBag.OutGstRate ?? 0.0);
+    var retRate = (double)(ViewBag.RetGstRate ?? 0.0);
+}
+
+<div class="container py-5">
+    <h2 class="text-center fw-bold mb-4 text-primary">
+        <i class="bi bi-credit-card"></i> Round Trip Payment
+    </h2>
+
+    <div class="row g-4">
+        <!--  Departure Flight Payment -->
+        @if (outBooking != null)
+        {
+            <div class="col-md-6">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-body">
+                        <h4 class="text-center text-primary fw-semibold mb-3">
+                            Departure Flight
+                        </h4>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>PNR:</span> <strong>@outBooking.PNR</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Seats:</span> <span>@outBooking.SeatsBooked</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Base Fare:</span> <span>₹@outBooking.TotalAmount.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>GST (@(outRate * 100)%):</span> <span>₹@outGST.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2 mb-3">
+                            <strong>Total:</strong> <strong>₹@outTotal.ToString("N2")</strong>
+                        </div>
+
+                        @if (outBooking.Status == "Confirmed" || outBooking.Status == "Success")
+                        {
+                            <div class="alert alert-success text-center mb-3">
+                                ✅ Payment Completed
+                            </div>
+                        }
+                        else
+                        {
+                            <form asp-action="Payment" method="post" class="text-center">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="bookingId" value="@outBooking.BookingId" />
+                                <button type="submit" class="btn btn-success px-5 py-2 fw-semibold shadow-sm">
+                                    Pay ₹@outTotal.ToString("N2")
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!--  Return Flight Payment -->
+        @if (retBooking != null)
+        {
+            <div class="col-md-6">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-body">
+                        <h4 class="text-center text-primary fw-semibold mb-3">
+                            Return Flight
+                        </h4>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>PNR:</span> <strong>@retBooking.PNR</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Seats:</span> <span>@retBooking.SeatsBooked</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Base Fare:</span> <span>₹@retBooking.TotalAmount.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>GST (@(retRate * 100)%):</span> <span>₹@retGST.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2 mb-3">
+                            <strong>Total:</strong> <strong>₹@retTotal.ToString("N2")</strong>
+                        </div>
+
+                        @if (retBooking.Status == "Confirmed" || retBooking.Status == "Success")
+                        {
+                            <div class="alert alert-success text-center mb-3">
+                                ✅ Payment Completed
+                            </div>
+                        }
+                        else
+                        {
+                            <form asp-action="Payment" method="post" class="text-center">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="bookingId" value="@retBooking.BookingId" />
+                                <button type="submit" class="btn btn-success px-5 py-2 fw-semibold shadow-sm">
+                                    Pay ₹@retTotal.ToString("N2")
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="text-center mt-5">
+        <a asp-action="MyBookings" asp-controller="Booking" class="btn btn-outline-secondary px-4">
+            <i class="bi bi-arrow-left-circle"></i> Back to My Bookings
+        </a>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+        }
+
+    .btn-success {
+        background: linear-gradient(135deg, #00bcd4, #0078d7);
+        border: none;
+    }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #0078d7, #00bcd4);
+            transform: scale(1.05);
+        }
+</style>

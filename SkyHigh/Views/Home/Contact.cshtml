@@ -1,0 +1,306 @@
+﻿
+
+@*pop up model*@
+
+@model SkyHigh.Models.ContactMessage
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Contact Us";
+}
+
+<div class="contact-page-container">
+    <!-- Hero Section -->
+    <div class="contact-hero">
+        <h1>Contact SkyHigh Airlines</h1>
+        <p>We’re here to make your journey smooth and memorable. Reach out anytime for assistance.</p>
+    </div>
+
+    <div class="contact-grid">
+        <div class="contact-form-card">
+            <h3>Send Us a Message</h3>
+            <p>Have questions, feedback, or special requests? Fill out the form below.</p>
+
+            <!-- added anti-forgery token + ensured correct controller binding -->
+            <form asp-action="Contact" asp-controller="Home" method="post" autocomplete="off" class="contact-form">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label asp-for="Name">Full Name</label>
+                    <input asp-for="Name" class="form-control" placeholder="Enter your full name" required />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email">Email Address</label>
+                    <input asp-for="Email" type="email" class="form-control" placeholder="Enter your email" required />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Phone">Phone Number</label>
+                    <input asp-for="Phone" class="form-control" placeholder="Enter your phone number" required />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Subject">Subject</label>
+                    <input asp-for="Subject" class="form-control" placeholder="Booking Inquiry, Feedback, etc." required />
+                    <span asp-validation-for="Subject" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Message">Message</label>
+                    <textarea asp-for="Message" rows="5" class="form-control" placeholder="Type your message here..." required></textarea>
+                    <span asp-validation-for="Message" class="text-danger"></span>
+                </div>
+
+                <!-- button unchanged, works properly -->
+                <button type="submit" class="btn-submit">Send Message</button>
+
+                <!-- success message fix: now works after redirect -->
+                @if (TempData["ContactSuccess"] != null)
+                {
+                    <p class="success-msg">@TempData["ContactSuccess"]</p>
+                }
+            </form>
+        </div>
+
+        <!-- Airline Contact Info (unchanged) -->
+        <div class="contact-info-card">
+            <h3>Get in Touch</h3>
+            <p><i class="bi bi-telephone-fill"></i> +91 98765 43210</p>
+            <p><i class="bi bi-envelope-fill"></i>  skyhighairlinee@gmail.com</p>
+            <p><i class="bi bi-geo-alt-fill"></i> SkyHigh Airlines HQ, kengeribus Terminal 3, Karnataka, India</p>
+
+            <div class="social-links">
+                <a href="https://www.youtube.com/%40SkyHighAirline-f1r" target="_blank" title="YouTube"><i class="bi bi-youtube"></i></a>
+                <a href="https://x.com/SkyHighAirlinee?t=O-YqeXx6q0waXCnWmOukAg&s=08" target="_blank" title="Twitter"><i class="bi bi-twitter-x"></i></a>
+                <a href="https://www.instagram.com/skyhigh_airlines" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
+                <a href="https://www.linkedin.com/in/skyhigh-airlines-b1b47038b" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            </div>
+
+            <div class="support-hours">
+                <h4>Customer Support Hours</h4>
+                <p>Mon – Fri: 8:00 AM – 8:00 PM<br />Sat – Sun: 9:00 AM – 6:00 PM</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!--  keeps validation functional -->
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<!-- Airline Contact Page Styling (unchanged except tiny improvements) -->
+<style>
+    body {
+        background: #f6f9fb;
+        color: #334155;
+        font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+    }
+
+    .contact-page-container {
+        padding: 50px 7%;
+    }
+
+    .contact-hero {
+        text-align: center;
+        background: linear-gradient(90deg, #334155, #64748B);
+        color: #fff;
+        border-radius: 16px;
+        padding: 50px 30px;
+        margin-bottom: 40px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+        .contact-hero h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .contact-hero p {
+            font-size: 1rem;
+            opacity: 0.95;
+        }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 35px;
+    }
+
+    .contact-form-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 35px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+    }
+
+        .contact-form-card h3 {
+            color: #007bff;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .contact-form-card p {
+            color: #64748B;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+    .form-group {
+        margin-bottom: 18px;
+        text-align: left;
+    }
+
+    label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+        color: #334155;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s ease;
+    }
+
+        .form-control:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+        }
+
+    .btn-submit {
+        background: linear-gradient(90deg, #007bff, #00bcd4);
+        color: #fff;
+        font-weight: 600;
+        padding: 12px 26px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+        .btn-submit:hover {
+            background: linear-gradient(90deg, #00bcd4, #007bff);
+        }
+
+    .success-msg {
+        margin-top: 15px;
+        color: #16a34a;
+        font-weight: 600;
+    }
+
+    .contact-info-card {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 35px 25px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        color: #334155;
+    }
+
+        .contact-info-card h3 {
+            color: #007bff;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .contact-info-card p {
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .contact-info-card i {
+            margin-right: 8px;
+            color: #007bff;
+        }
+
+    .social-links {
+        margin: 20px 0;
+    }
+
+        .social-links a {
+            color: #334155;
+            margin-right: 15px;
+            font-size: 1.3rem;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+            .social-links a:hover {
+                color: #007bff;
+                transform: scale(1.1);
+            }
+
+    .support-hours h4 {
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #334155;
+    }
+
+    .support-hours p {
+        font-size: 0.95rem;
+        color: #64748B;
+        margin: 0;
+    }
+
+    @@media (max-width: 992px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .contact-form-card, .contact-info-card {
+            padding: 25px;
+        }
+    }
+</style>
+
+<!--  Added popup script (no backend/layout changes) -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector(".contact-form");
+        if (!form) return;
+
+        form.addEventListener("submit", function (e) {
+            const isLoggedIn = '@Context.Session.GetInt32("UserId")' !== '' && '@Context.Session.GetInt32("UserId")' !== 'null';
+
+            if (!isLoggedIn) {
+                e.preventDefault();
+
+                // Create popup
+                const popup = document.createElement("div");
+                popup.style.position = "fixed";
+                popup.style.top = "0";
+                popup.style.left = "0";
+                popup.style.width = "100%";
+                popup.style.height = "100%";
+                popup.style.backgroundColor = "rgba(0,0,0,0.5)";
+                popup.style.display = "flex";
+                popup.style.alignItems = "center";
+                popup.style.justifyContent = "center";
+                popup.style.zIndex = "9999";
+
+                popup.innerHTML = `
+                    <div style="background:#fff; padding:30px 50px; border-radius:12px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+                        <h4 style="margin-bottom:15px;">Login Required</h4>
+                        <p style="margin-bottom:20px;">Please login to send a message.</p>
+                        <button id="okBtn" style="background-color:#007bff; color:#fff; border:none; border-radius:8px; padding:8px 20px; cursor:pointer;">OK</button>
+                    </div>
+                `;
+
+                document.body.appendChild(popup);
+
+                popup.querySelector("#okBtn").addEventListener("click", function () {
+                    window.location.href = '/Account/Login';
+                });
+            }
+        });
+    });
+</script>

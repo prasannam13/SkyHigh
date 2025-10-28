@@ -1,0 +1,124 @@
+﻿
+
+<div id="chatbot-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+
+    <button id="chat-toggle"
+            style="background-color: #007bff; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px;">
+
+        💬
+
+    </button>
+
+
+
+    <div id="chat-window"
+         style="display:none; width: 320px; height: 400px; background-color: white; border: 1px solid #ccc; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); flex-direction: column;">
+
+        <div style="background-color: #007bff; color: white; padding: 10px; border-radius: 12px 12px 0 0;">
+
+            Airline 24/7 Support
+
+        </div>
+
+
+
+        <div id="chat-messages" style="flex:1; padding:10px; overflow-y:auto; height:300px;"></div>
+
+
+
+        <div style="display:flex; padding:10px; border-top:1px solid #ccc;">
+
+            <input type="text" id="user-input" placeholder="Type your message..."
+                   style="flex:1; padding:8px; border-radius:8px; border:1px solid #ccc;">
+
+            <button id="send-btn"
+                    style="margin-left:8px; padding:8px 12px; background-color:#007bff; color:white; border:none; border-radius:8px;">
+
+                Send
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    const toggleBtn = document.getElementById('chat-toggle');
+
+    const chatWindow = document.getElementById('chat-window');
+
+    const sendBtn = document.getElementById('send-btn');
+
+    const userInput = document.getElementById('user-input');
+
+    const chatMessages = document.getElementById('chat-messages');
+
+
+
+    toggleBtn.onclick = () => {
+
+        chatWindow.style.display = chatWindow.style.display === 'none' ? 'flex' : 'none';
+
+    };
+
+
+
+    function appendMessage(sender, message) {
+
+        const div = document.createElement('div');
+
+        div.innerHTML = `<strong>${sender}:</strong> ${message}`;
+
+        div.style.margin = "5px 0";
+
+        chatMessages.appendChild(div);
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    }
+
+
+
+    async function sendMessage() {
+
+        const message = userInput.value.trim();
+
+        if (!message) return;
+
+        appendMessage('You', message);
+
+        userInput.value = '';
+
+
+
+        const response = await fetch('/Chat/GetResponse', {
+
+            method: 'POST',
+
+            headers: { 'Content-Type': 'application/json' },
+
+            body: JSON.stringify({ message })
+
+        });
+
+        const data = await response.json();
+
+        appendMessage('Bot', data.reply);
+
+    }
+
+
+
+    sendBtn.onclick = sendMessage;
+
+    userInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+
+</script>
+
+
+

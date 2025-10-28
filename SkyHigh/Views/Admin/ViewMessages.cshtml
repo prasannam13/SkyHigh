@@ -1,0 +1,152 @@
+﻿@model IEnumerable<SkyHigh.Models.ContactMessage>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Customer Messages - SkyHigh Airlines";
+}
+
+<div class="admin-messages-container">
+    <h2>📩 Customer Contact Messages</h2>
+
+    @if (!Model.Any())
+    {
+        <p style="color:#64748B;">No messages received yet.</p>
+    }
+    else
+    {
+        <table class="table table-striped message-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                    <th>Submitted On</th>
+                    <th>Admin Reply</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var msg in Model)
+                {
+                    <tr>
+                        <td>@msg.Name</td>
+                        <td>@msg.Email</td>
+                        <td>@msg.Phone</td>
+                        <td>@msg.Subject</td>
+                        <td>@msg.Message</td>
+                        <td>@msg.SubmittedOn.ToString("dd MMM yyyy, hh:mm tt")</td>
+                        <td style="min-width:240px;">
+                            @if (string.IsNullOrEmpty(msg.AdminReply))
+                            {
+                                <form asp-action="ReplyMessage" asp-controller="Admin" method="post" style="margin:0;">
+                                    <input type="hidden" name="id" value="@msg.Id" />
+                                    <textarea name="AdminReply" class="form-control" rows="2" placeholder="Write reply..." required></textarea>
+                                    <button type="submit" class="btn btn-primary btn-sm mt-2">Send Reply</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <div class="replied-box">
+                                    <strong>Reply:</strong> @msg.AdminReply<br />
+                                    <small><i>Replied on @msg.RepliedOn?.ToString("dd MMM yyyy, hh:mm tt")</i></small>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<style>
+    .admin-messages-container {
+        max-width: 1000px;
+        margin: 50px auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    }
+
+        .admin-messages-container h2 {
+            color: #007bff;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+    .message-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .message-table th {
+            background: #007bff;
+            color: #fff;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .message-table td {
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .message-table tr:hover {
+            background: #f8fafc;
+        }
+
+    textarea.form-control {
+        resize: none;
+        font-size: 0.95rem;
+    }
+
+    .replied-box {
+        background: #f1f5f9;
+        border-left: 4px solid #007bff;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(90deg, #007bff, #00bcd4);
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #00bcd4, #007bff);
+            transform: scale(1.05);
+        }
+
+    .admin-messages-container {
+        max-width: 1000px;
+        margin: 50px auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    }
+
+        .admin-messages-container h2 {
+            color: #007bff;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+    .message-table th {
+        background: #007bff;
+        color: #fff;
+        text-align: center;
+    }
+
+    .replied-box {
+        background: #f1f5f9;
+        border-left: 4px solid #007bff;
+        padding: 8px 12px;
+        border-radius: 6px;
+    }
+</style>

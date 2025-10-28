@@ -1,0 +1,627 @@
+﻿@model SkyHigh.Models.User
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var profilePicPath = ViewBag.ProfilePicPath ?? "/ProfilePic/avtar.jpg";
+    var hasCustomPic = !string.IsNullOrEmpty(Model.ProfilePicPath) && Model.ProfilePicPath != "/ProfilePic/avtar.jpg";
+}
+
+<div class="profile-wrapper">
+    <div class="profile-card">
+        <div class="profile-header">
+            <h2><i class="bi bi-person-circle"></i> User Profile</h2>
+            <p class="subtitle">Your personal information with SkyHigh Airlines</p>
+        </div>
+
+        <div class="profile-body">
+            <div class="profile-info">
+                <div class="info-group">
+                    <label><i class="bi bi-person-fill"></i> Full Name</label>
+                    <div id="profileName">@Model.Name</div>
+                </div>
+
+                <div class="info-group">
+                    <label><i class="bi bi-envelope-fill"></i> Email</label>
+                    <div>@Model.Email</div>
+                </div>
+
+                <div class="info-group">
+                    <label><i class="bi bi-gender-ambiguous"></i> Gender</label>
+                    <div id="profileGender">@Model.Gender</div>
+                </div>
+
+                <div class="info-group">
+                    <label><i class="bi bi-calendar3"></i> Date of Birth</label>
+                    <div id="profileDOB">@Model.DOB.ToString("yyyy-MM-dd")</div>
+                </div>
+
+                <div class="info-group">
+                    <label><i class="bi bi-telephone-fill"></i> Phone</label>
+                    <div id="profilePhone">@Model.Phone</div>
+                </div>
+
+                <button type="button" onclick="showUpdateModal()" class="update-btn">
+                    <i class="bi bi-pencil-square"></i> Edit Profile
+                </button>
+            </div>
+
+            <div class="profile-photo-section">
+                <div class="photo-container">
+                    <img id="profileBigPic" src="@profilePicPath" alt="Profile Picture" class="profile-photo" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Update Profile Modal ===== -->
+<div id="updateModal" class="modal-center">
+    <div id="updateModalContent" class="modal-box">
+        <h3 class="modal-title">✏️ Update Your Profile</h3>
+
+        <form id="updateProfileForm" asp-controller="Account" asp-action="UpdateProfile"
+              method="post" enctype="multipart/form-data" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label asp-for="Name"></label>
+                <input asp-for="Name" class="form-control-modern" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Gender"></label>
+                <select asp-for="Gender" class="form-control-modern">
+                    <option value="">-- Select Gender --</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+                <span asp-validation-for="Gender" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DOB"></label>
+                <input asp-for="DOB" type="date" class="form-control-modern" />
+                <span asp-validation-for="DOB" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Phone"></label>
+                <input asp-for="Phone" class="form-control-modern" />
+                <span asp-validation-for="Phone" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ProfilePicPath">Profile Picture</label>
+                <input type="file" name="ProfilePic" id="updateProfilePic" accept="image/*" class="form-control-modern" />
+                <div id="removeProfilePicArea">
+                    <button type="button" id="removeProfileBtn" onclick="removeProfilePic()" class="remove-btn" style="display:none;">Remove Profile Pic</button>
+                    <div id="removeStatusMsg" class="remove-msg" style="display:none;">Will be removed on update</div>
+                </div>
+            </div>
+
+            <div id="updateError" class="error-text"></div>
+
+            <div class="modal-actions">
+                <button type="button" onclick="submitUpdate()" id="updateBtn" class="btn btn-save" aria-live="polite" aria-busy="false">
+                    <span id="updateBtnText">Update</span>
+                    <svg id="loadingSpinner" class="spinner-svg" viewBox="0 0 50 50" aria-hidden="true" style="display:none;">
+                        <circle class="spinner-track" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+                        <circle class="spinner-head" cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke-linecap="round"></circle>
+                    </svg>
+                </button>
+                <button type="button" onclick="closeUpdateModal()" class="btn btn-cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== Success Popup ===== -->
+<div id="successPopup" class="modal-center">
+    <div class="success-box">
+        <i class="bi bi-check-circle-fill success-icon"></i>
+        <p class="success-text">Profile Updated Successfully!</p>
+        <button onclick="closeSuccessPopup()" class="btn btn-ok">OK</button>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+}
+
+<script>
+
+    let removeProfilePicFlag = false;
+
+    let isSubmitting = false;
+
+    function showUpdateModal() {
+
+        document.getElementById('updateModal').style.display = 'flex';
+
+        document.getElementById('updateError').textContent = '';
+
+        removeProfilePicFlag = false;
+
+        const profilePicSrc = document.getElementById('profileBigPic').src;
+
+        document.getElementById('removeProfileBtn').style.display =
+
+            (profilePicSrc.includes('/ProfilePic/avtar.jpg')) ? "none" : "inline-block";
+
+    }
+
+    function closeUpdateModal() {
+
+        document.getElementById('updateModal').style.display = 'none';
+
+    }
+
+    function showSuccessPopup() {
+
+        document.getElementById('successPopup').style.display = 'flex';
+
+    }
+
+    function closeSuccessPopup() {
+
+        document.getElementById('successPopup').style.display = 'none';
+
+    }
+
+    function removeProfilePic() {
+
+        removeProfilePicFlag = true;
+
+        document.getElementById('updateProfilePic').value = null;
+
+        document.getElementById('removeStatusMsg').style.display = "block";
+
+    }
+
+    function setLoadingState(isLoading) {
+
+        const btn = document.getElementById('updateBtn');
+
+        const spinner = document.getElementById('loadingSpinner');
+
+        const text = document.getElementById('updateBtnText');
+
+        if (isLoading) {
+
+            isSubmitting = true;
+
+            btn.disabled = true;
+
+            spinner.style.display = 'inline-block';
+
+            text.textContent = 'Updating...';
+
+        } else {
+
+            isSubmitting = false;
+
+            btn.disabled = false;
+
+            spinner.style.display = 'none';
+
+            text.textContent = 'Update';
+
+        }
+
+    }
+
+    function submitUpdate() {
+
+        if (isSubmitting) return;
+
+        const form = document.getElementById('updateProfileForm');
+
+        // Trigger ASP.NET client-side validation
+
+        if (!$(form).valid()) {
+
+            // show validation messages (unobtrusive validation handles this)
+
+            return;
+
+        }
+
+        setLoadingState(true);
+
+        const formData = new FormData(form);
+
+        formData.append("removeProfilePic", removeProfilePicFlag ? "true" : "false");
+
+        fetch(form.action, {
+
+            method: 'POST',
+
+            body: formData
+
+        })
+
+        .then(response => {
+
+            if (!response.ok) throw new Error("Network response was not ok");
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            setLoadingState(false);
+
+            if (data.success) {
+
+                document.getElementById('profileName').textContent = data.name;
+
+                document.getElementById('profileGender').textContent = data.gender;
+
+                document.getElementById('profileDOB').textContent = data.dob;
+
+                document.getElementById('profilePhone').textContent = data.phone;
+
+                if (data.profilePicPath) {
+
+                    const newPic = data.profilePicPath + '?t=' + new Date().getTime();
+
+                    document.getElementById('profileBigPic').src = newPic;
+
+                    const navPic = document.getElementById('navProfilePic');
+
+                    if (navPic) navPic.src = newPic;
+
+                }
+
+                closeUpdateModal();
+
+                showSuccessPopup();
+
+            } else {
+
+                document.getElementById('updateError').textContent = data.message || "Update failed.";
+
+            }
+
+        })
+
+        .catch(error => {
+
+            setLoadingState(false);
+
+            document.getElementById('updateError').textContent = "Update failed. Try again.";
+
+            console.error(error);
+
+        });
+
+    }
+</script>
+
+<style>
+
+    body {
+        background: #f4f7fc;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* === Card === */
+
+    .profile-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 60px 20px;
+    }
+
+    .profile-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        padding: 40px 60px;
+        max-width: 950px;
+        width: 100%;
+    }
+
+    .profile-header h2 {
+        color: #002b5c;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .subtitle {
+        color: #6c757d;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+    /* === Info Section === */
+
+    .profile-body {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-top: 40px;
+        gap: 50px;
+    }
+
+    .profile-info {
+        flex: 1;
+        min-width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .info-group {
+        background: #f9fbff;
+        border: 1px solid #e2ebf8;
+        border-radius: 10px;
+        padding: 14px 16px;
+        transition: 0.3s ease;
+    }
+
+        .info-group:hover {
+            background: #eef5ff;
+        }
+
+        .info-group label {
+            font-weight: 600;
+            color: #004aad;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .info-group div {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+    .update-btn {
+        margin-top: 25px;
+        background: linear-gradient(90deg, #007bff, #00aaff);
+        color: #fff;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 28px;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .update-btn:hover {
+            background: linear-gradient(90deg, #0066cc, #0099dd);
+            transform: translateY(-2px);
+        }
+
+    /* === Photo === */
+
+    .photo-container {
+        position: relative;
+        width: 200px;
+        height: 200px;
+    }
+
+    .profile-photo {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        /* border: 3px solid #007bff; */
+
+        object-fit: cover;
+        box-shadow: 0 6px 16px rgba(0,123,255,0.25);
+    }
+
+    .photo-badge {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #007bff;
+        color: #fff;
+        padding: 5px 14px;
+        border-radius: 16px;
+        font-size: 13px;
+    }
+
+    /* === Modal === */
+
+    .modal-center {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.4);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 20px;
+        padding: 30px 28px;
+        width: 420px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .modal-title {
+        text-align: center;
+        color: #004aad;
+        font-weight: 700;
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+        .form-group label {
+            font-weight: 600;
+            color: #003366;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+    .form-control-modern {
+        width: 100%;
+        border: 1px solid #cfd8e3;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+        .form-control-modern:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+        }
+
+    .remove-btn {
+        background: #f8d7da;
+        color: #721c24;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .remove-msg {
+        color: #721c24;
+        font-size: 13px;
+        margin-top: 4px;
+    }
+
+    .error-text {
+        color: red;
+        font-size: 14px;
+        margin-top: 8px;
+        text-align: center;
+    }
+
+    /* === Modal Buttons === */
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-save {
+        background: #007bff;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .btn-save[disabled] {
+            opacity: 0.7;
+            cursor: default;
+        }
+
+        .btn-save:hover:not([disabled]) {
+            background: #0066cc;
+        }
+
+    .spinner-svg {
+        width: 18px;
+        height: 18px;
+        vertical-align: middle;
+    }
+
+    .spinner-track {
+        stroke: rgba(255,255,255,0.35);
+    }
+
+    .spinner-head {
+        stroke: #ffffff;
+        stroke-dasharray: 80;
+        stroke-dashoffset: 60;
+        transform-origin: 50% 50%;
+        animation: spin-head 0.9s linear infinite;
+    }
+
+    @@keyframes spin-head {
+
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .btn-cancel {
+        background: #ccc;
+    }
+
+        .btn-cancel:hover {
+            background: #bbb;
+        }
+
+    /* === Success Popup === */
+
+    .success-box {
+        background: #fff;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+        text-align: center;
+        width: 300px;
+    }
+
+    .success-icon {
+        color: #28a745;
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    .success-text {
+        font-weight: 600;
+        color: #004aad;
+    }
+
+    .btn-ok {
+        background: #007bff;
+        color: white;
+        margin-top: 12px;
+    }
+
+        .btn-ok:hover {
+            background: #0066cc;
+        }
+
+    @@media (max-width: 768px) {
+
+        .modal-box {
+            width: 90%;
+        }
+    }
+</style>

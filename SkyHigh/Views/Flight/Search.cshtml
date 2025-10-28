@@ -1,0 +1,462 @@
+﻿@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var isLoggedIn = Context.Session.GetInt32("UserId") != null;
+
+}
+
+<!--  Search Flights Section -->
+@* <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh; background: linear-gradient(180deg, #ffffff, #f8fbff);"> *@
+<div class="d-flex justify-content-center align-items-center search-hero" style="min-height: 80vh;">
+
+    <div class="centerbox shadow-lg" data-aos="zoom-in" style="max-width:480px; width:100%;">
+        <div class="text-center mb-3">
+            <i class="bi bi-airplane" style="font-size: 2rem; color: #0D47A1; animation: fly 3s ease-in-out infinite;"></i>
+        </div>
+
+        <h2 class="text-center fw-bold mb-4" style="color:#212529;">Search Flights</h2>
+
+        <form id="searchForm" method="post" autocomplete="off">
+            <div class="form-group mb-3">
+                <label for="source" class="fw-semibold">Source:</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-geo-alt"></i></span>
+                    <input type="text" id="source" name="source" class="form-control" placeholder="Enter Source City" required />
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="destination" class="fw-semibold">Destination:</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-geo"></i></span>
+                    <input type="text" id="destination" name="destination" class="form-control" placeholder="Enter Destination City" required />
+                </div>
+            </div>
+            <!-- Trip type selector -->
+            <div class="trip-type-selector" style="margin-bottom:12px;">
+                <label style="margin-right:16px;">
+                    <input type="radio" name="TripType" value="OneWay" checked onchange="toggleReturnDate()" /> One Way
+                </label>
+                <label>
+                    <input type="radio" name="TripType" value="RoundTrip" onchange="toggleReturnDate()" /> Round Trip
+                </label>
+            </div>
+
+            <!-- existing departure date -->
+            <div class="form-group">
+                <label for="DepartureDate">Departure Date</label>
+                <input type="date" id="DepartureDate" name="DepartureDate" class="form-control" required />
+            </div>
+
+            <!-- return date (hidden by default) -->
+            <div class="form-group" id="returnDateRow" style="display:none;">
+                <label for="ReturnDate">Return Date</label>
+                <input type="date" id="ReturnDate" name="ReturnDate" class="form-control" />
+            </div>
+
+            <script>
+
+                function toggleReturnDate() {
+
+                    const rt = document.querySelector('input[name="TripType"]:checked').value;
+
+                    document.getElementById('returnDateRow').style.display = rt === 'RoundTrip' ? 'block' : 'none';
+
+                }
+
+                // ensure correct state on page load
+
+                document.addEventListener('DOMContentLoaded', toggleReturnDate);
+            </script>
+
+
+            <div class="d-flex justify-content-center gap-3">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <button type="button" id="backBtn" class="btn btn-secondary">Back</button>
+                <button type="button" id="cancelBtn" class="btn btn-danger">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+<h3 class="text-center mt-4 mb-4 fw-semibold" style="color:#0D47A1;" data-aos="fade-down">Quick Access</h3>
+
+<div class="container mt-4">
+    <div class="row" style="gap: 28px; justify-content:center;">
+        <!--  PNR Widget -->
+        <div class="col-md-3 widget-box11" data-aos="flip-left" data-aos-delay="100"
+             onclick="window.location.href='@(
+
+             isLoggedIn
+
+             ? Url.Action("PnrLookup", "Flight")
+
+                                                       : Url.Action("Login", "Account")
+
+                                                                                                        )'">
+            <div class="widget-icon" style="background:  #1565C0;">
+                <i class="bi bi-upc-scan"></i>
+            </div>
+            <div><b>PNR</b></div>
+            <div>Track your flight using your PNR number.</div>
+        </div>
+
+        <!--  Most Visited Flights Widget -->
+        <div class="col-md-3 widget-box12" data-aos="flip-left" data-aos-delay="200"
+             onclick="window.location.href='@Url.Action("MostVisitedFlights", "Flight")'">
+            <div class="widget-icon" style="background: linear-gradient(135deg,#28a745,#a8ff78);">
+                <i class="bi bi-airplane-engines"></i>
+            </div>
+            <div><b>Most Visited Flights</b></div>
+            <div>Browse all available flights and book instantly.</div>
+        </div>
+
+        <!--  Cancellation Policies Widget -->
+        <div class="col-md-3 widget-box13" data-aos="flip-left" data-aos-delay="300"
+             onclick="showPoliciesWidget()">
+            <div class="widget-icon" style="background: linear-gradient(135deg,#ffc107,#ffb347);">
+                <i class="bi bi-file-earmark-pdf"></i>
+            </div>
+            <div class="widget-title text-dark">Cancellation Policies</div>
+            <div class="widget-desc text-dark">View or download our flight cancellation policies.</div>
+        </div>
+    </div>
+
+    <!-- Cancellation Policies Modal -->
+    <div id="policiesWidget" style="display:none; margin-top:32px; padding:32px 24px; background:#fffbea; border-radius:18px; box-shadow:0 2px 16px rgba(0,0,0,0.10); max-width:500px; margin:auto;" data-aos="fade-up">
+        <h4 style="color:#ffc107; font-weight:bold; margin-bottom:20px;">Cancellation Policies</h4>
+        <ul style="font-size:16px; margin-bottom:28px;">
+            <li>Cancellations >72 hours: Full refund minus ₹500 processing fee.</li>
+            <li>Cancellations 24–72 hours: 50% refund.</li>
+            <li>Cancellations &lt;24 hours: No refund.</li>
+            <li>No-show/missed flight: No refund.</li>
+            <li>Contact support for special cases.</li>
+        </ul>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="@Url.Action("DownloadCancellationPolicy", "Flight")" class="btn btn-danger" download>Download PDF</a>
+            <button type="button" class="btn btn-warning text-white fw-semibold" onclick="hidePoliciesWidget()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!--  Bootstrap Toast Notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <!-- Search Toast -->
+    <div id="flightToast" class="toast align-items-center text-bg-primary border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-airplane-engines me-2"></i> Flight search initiated successfully ✈️
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+
+    <!-- Reset Toast -->
+    <div id="resetToast" class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-arrow-repeat me-2"></i> Form reset successfully ✅
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        const searchForm = document.getElementById('searchForm');
+
+        const flightToastEl = document.getElementById('flightToast');
+
+        const resetToastEl = document.getElementById('resetToast');
+
+        searchForm.addEventListener('submit', function (event) {
+
+            event.preventDefault();
+
+            const toast = new bootstrap.Toast(flightToastEl);
+
+            toast.show();
+
+            setTimeout(() => searchForm.submit(), 1000);
+
+        });
+
+        document.getElementById('cancelBtn').onclick = function () {
+
+            document.getElementById('searchForm').reset();
+
+            const resetToast = new bootstrap.Toast(resetToastEl);
+
+            resetToast.show();
+
+        };
+
+        document.getElementById('backBtn').onclick = function () {
+
+            window.history.back();
+
+        };
+
+        function showPoliciesWidget() {
+
+            const widget = document.getElementById('policiesWidget');
+
+            widget.style.display = "block";
+
+            widget.style.opacity = 0;
+
+            setTimeout(() => {
+
+                widget.style.transition = "opacity 0.6s ease";
+
+                widget.style.opacity = 1;
+
+            }, 50);
+
+            window.scrollTo({ top: widget.offsetTop - 80, behavior: 'smooth' });
+
+        }
+
+        function hidePoliciesWidget() {
+
+            const widget = document.getElementById('policiesWidget');
+
+            widget.style.transition = "opacity 0.4s ease";
+
+            widget.style.opacity = 0;
+
+            setTimeout(() => widget.style.display = "none", 400);
+
+        }
+    </script>
+
+}
+
+@section Styles {
+    <style>
+
+        .search-hero {
+            background: transparent !important;
+            min-height: 80vh; 
+        }
+
+        /* make the card completely transparent (no white box) */
+
+        .centerbox {
+            background: rgba(255, 255, 255, 0.85); /* mostly solid */
+
+            backdrop-filter: blur(12px); /* smooth glass feel */
+
+            border-radius: 20px;
+            padding: 32px 38px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        }
+
+        /* keep form inputs readable but not full white */
+
+        .input-group .form-control {
+            background: rgba(255,255,255,0.92); /* subtle white so inputs remain readable */
+
+            border-left: none;
+            box-shadow: none;
+        }
+
+        /* icon pill: remove white pill behind icons */
+
+        .input-group-text,
+        .input-group .input-group-text {
+            background: transparent !important;
+            border-right: none;
+            color: #333;
+        }
+
+        /* keep subtle field borders */
+
+        .input-group .form-control,
+        .input-group .input-group-text {
+            border: 1px solid #e6e9ed;
+        }
+
+        /* remove the strong page overlay that washed out background image.
+
+                           if you want a little softening, use 0.12; 0.0 removes it entirely. */
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.12); /* <-- lower opacity so background shows */
+
+            backdrop-filter: blur(0px);
+            z-index: -1;
+        }
+
+        /* optional: slightly lift the form title so it reads better on bg */
+
+        h2.text-center.fw-bold.mb-4 {
+            color: #212529;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        /* added till here */
+
+
+
+
+        .input-group-text {
+            border: 1px solid #dee2e6;
+            border-right: none;
+        }
+
+        .form-control {
+            border-left: none;
+            box-shadow: none;
+        }
+
+        .btn {
+            transition: all 0.3s ease;
+        }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+        /* Widget colors */
+
+        .widget-box11 {
+            background: #BBDEFB;
+            color: #000;
+        }
+
+        .widget-box12 {
+            background: #E8F5E9;
+            color: #000;
+        }
+
+        .widget-box13 {
+            background: #FFF3E0;
+            ;
+            color: #000;
+        }
+
+        /* Widget glow animation */
+
+        .widget-box11, .widget-box12, .widget-box13 {
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.13);
+            padding: 32px 18px 28px 18px;
+            text-align: center;
+            transition: all 0.4s ease;
+            min-width: 220px;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+            .widget-box11:hover {
+                transform: translateY(-7px) scale(1.05);
+                box-shadow: 0 0 25px rgba(21, 101, 192, 0.6);
+            }
+
+            .widget-box12:hover {
+                transform: translateY(-7px) scale(1.05);
+                box-shadow: 0 0 25px rgba(46, 125, 50, 0.6);
+            }
+
+            .widget-box13:hover {
+                transform: translateY(-7px) scale(1.05);
+                box-shadow: 0 0 25px rgba(249, 168, 37, 0.6);
+            }
+
+        .widget-icon {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+        }
+
+        .widget-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .widget-desc {
+            font-size: 1.01rem;
+            margin-bottom: 0;
+            color: #000 !important;
+        }
+
+        @@keyframes fly {
+
+            0% {
+                transform: translateX(-20px) translateY(0);
+            }
+
+            50% {
+                transform: translateX(20px) translateY(-10px);
+            }
+
+            100% {
+                transform: translateX(-20px) translateY(0);
+            }
+        }
+
+        @@media (max-width: 768px) {
+
+            .centerbox {
+                padding: 20px;
+                margin: 20px;
+            }
+
+            .widget-box11, .widget-box12, .widget-box13 {
+                min-width: 85vw;
+                margin-bottom: 20px;
+            }
+        }
+
+
+
+
+
+
+
+        /* === Page Background === */
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('/images/airplane-bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+        }
+
+        */
+        /* === Semi-transparent overlay for readability === */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(3px);
+            z-index: -1;
+        }
+    </style>
+
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+
+

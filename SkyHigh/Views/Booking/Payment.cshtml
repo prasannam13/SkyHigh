@@ -1,0 +1,112 @@
+﻿@model SkyHigh.Models.Booking
+@{
+    ViewData["Title"] = "Payment";
+    var isConfirmed = Model.Status == "Confirmed" || Model.Status == "Success";
+}
+
+<div class="container py-5">
+    <div class="card shadow-lg p-4 border-0 rounded-4">
+        <h3 class="text-center fw-bold text-primary mb-4">
+            <i class="bi bi-credit-card"></i> Payment for Flight @Model.FlightId
+        </h3>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h6 class="mb-0">PNR: <strong>@Model.PNR</strong></h6>
+            @if (isConfirmed)
+            {
+                <span class="badge bg-success px-3 py-2">Confirmed</span>
+            }
+            else
+            {
+                <span class="badge bg-warning text-dark px-3 py-2">Pending Payment</span>
+            }
+        </div>
+
+        @if (isConfirmed)
+        {
+            <div class="alert alert-success text-center py-4 rounded-3">
+                <h5 class="fw-semibold mb-2">✅ Payment already completed!</h5>
+                <p>Your booking is confirmed.</p>
+                <a asp-controller="Booking" asp-action="MyBookings" class="btn btn-primary mt-3">
+                    <i class="bi bi-arrow-left-circle"></i> Back to My Bookings
+                </a>
+            </div>
+        }
+        else
+        {
+            <form method="post" asp-action="Payment" autocomplete="off">
+                <input type="hidden" name="bookingId" value="@Model.BookingId" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Card Number</label>
+                    <input type="text" name="cardNo" class="form-control" maxlength="16"
+                           placeholder="Enter 16-digit card number" pattern="\d{16}" required />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Card Holder Name</label>
+                        <input type="text" name="cardName" class="form-control"
+                               placeholder="Enter name on card" required />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-semibold">Expiry (MM/YY)</label>
+                        <input type="text" name="expiry" class="form-control"
+                               placeholder="MM/YY" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" required />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-semibold">CVV</label>
+                        <input type="password" name="cvv" maxlength="3" class="form-control"
+                               placeholder="123" pattern="\d{3}" required />
+                    </div>
+                </div>
+
+                @{
+                    double gstRate = (Model.Class ?? "").Trim().ToLower() == "business" ? 0.18 : 0.05;
+                    double gstAmount = Model.TotalAmount * gstRate;
+                    double totalPayable = Model.TotalAmount + gstAmount;
+                }
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success px-5 py-2 fw-semibold shadow-sm">
+                        Pay ₹@String.Format("{0:N2}", totalPayable)
+                    </button>
+                    <div class="mt-2 text-muted small">
+                        (Base Price: ₹@String.Format("{0:N2}", Model.TotalAmount) +
+                        GST (@(gstRate * 100)%): ₹@String.Format("{0:N2}", gstAmount))
+                    </div>
+
+                    <a asp-controller="Booking" asp-action="MyBookings" class="btn btn-outline-secondary mt-3 px-4">
+                        <i class="bi bi-arrow-left-circle"></i> Back to My Bookings
+                    </a>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+<style>
+    .form-label {
+        font-weight: 600;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+    }
+
+        .form-control:focus {
+            border-color: #0078d7;
+            box-shadow: 0 0 6px rgba(0, 120, 215, 0.25);
+        }
+
+    .btn-success {
+        background: linear-gradient(135deg, #00bcd4, #0078d7);
+        border: none;
+    }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #0078d7, #00bcd4);
+            transform: scale(1.05);
+        }
+</style>
